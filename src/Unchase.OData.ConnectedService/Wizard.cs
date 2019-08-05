@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Copyright (c) Microsoft Corporation.  All rights reserved.
 // Updated by Unchase (https://github.com/unchase).
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
@@ -14,7 +14,6 @@ namespace Unchase.OData.ConnectedService
 {
     internal class Wizard : ConnectedServiceWizard
     {
-        #region Properties and fields
         private Instance _serviceInstance;
 
         public ConfigODataEndpointViewModel ConfigODataEndpointViewModel { get; set; }
@@ -28,9 +27,7 @@ namespace Unchase.OData.ConnectedService
         public Version EdmxVersion => this.ConfigODataEndpointViewModel.EdmxVersion;
 
         public UserSettings UserSettings { get; }
-        #endregion
 
-        #region Constructors
         public Wizard(ConnectedServiceProviderContext context)
         {
             this.Context = context;
@@ -41,9 +38,11 @@ namespace Unchase.OData.ConnectedService
 
             if (this.Context.IsUpdating)
             {
-                // Since ServiceConfigurationV4 is a derived type of ServiceConfiguration. So we can deserialize a ServiceConfiguration into a ServiceConfigurationV4.
+                //Since ServiceConfigurationV4 is a derived type of ServiceConfiguration. So we can deserialize a ServiceConfiguration into a ServiceConfigurationV4.
                 var serviceConfig = this.Context.GetExtendedDesignerData<ServiceConfigurationV4>();
-                ConfigODataEndpointViewModel.Endpoint = serviceConfig.Endpoint;
+				
+
+				ConfigODataEndpointViewModel.Endpoint = serviceConfig.Endpoint;
                 ConfigODataEndpointViewModel.EdmxVersion = serviceConfig.EdmxVersion;
                 ConfigODataEndpointViewModel.ServiceName = serviceConfig.ServiceName;
                 ConfigODataEndpointViewModel.UseWebProxy = serviceConfig.UseWebProxy;
@@ -54,18 +53,19 @@ namespace Unchase.OData.ConnectedService
                 ConfigODataEndpointViewModel.WebProxyNetworkCredentialsUserName = serviceConfig.WebProxyNetworkCredentialsUserName;
                 ConfigODataEndpointViewModel.WebProxyNetworkCredentialsPassword = serviceConfig.WebProxyNetworkCredentialsPassword;
                 ConfigODataEndpointViewModel.UseNetworkCredentials = serviceConfig.UseNetworkCredentials;
+
+
+
                 ConfigODataEndpointViewModel.WebProxyUri = serviceConfig.WebProxyUri;
                 if (ConfigODataEndpointViewModel.View is ConfigODataEndpoint configODataEndpoint)
                     configODataEndpoint.IsEnabled = false;
 
-                // The Viewmodel should always be filled otherwise if the wizard is completed without visiting this page  the generated code becomes wrong
-                AdvancedSettingsViewModel.GeneratedFileNameEnabled = false; // advancedSettings.ReferenceFileName.IsEnabled = false;
+                // The Viewmodel should always be filled otherwise if the wizard is completed without visiting this page  the generated code becomes wrong 
+                AdvancedSettingsViewModel.GeneratedFileNameEnabled = false;//advancedSettings.ReferenceFileName.IsEnabled = false;
                 AdvancedSettingsViewModel.GeneratedFileName = serviceConfig.GeneratedFileNamePrefix;
                 AdvancedSettingsViewModel.UseNamespacePrefix = serviceConfig.UseNameSpacePrefix;
                 AdvancedSettingsViewModel.NamespacePrefix = serviceConfig.NamespacePrefix;
                 AdvancedSettingsViewModel.UseDataServiceCollection = serviceConfig.UseDataServiceCollection;
-                AdvancedSettingsViewModel.FunctionImportsGenerator = serviceConfig.FunctionImportsGenerator;
-                AdvancedSettingsViewModel.GenerateFunctionImports = serviceConfig.GenerateFunctionImports;
 
                 if (serviceConfig.EdmxVersion == Common.Constants.EdmxVersion4)
                 {
@@ -73,10 +73,10 @@ namespace Unchase.OData.ConnectedService
                         serviceConfig.IgnoreUnexpectedElementsAndAttributes;
                     AdvancedSettingsViewModel.EnableNamingAlias = serviceConfig.EnableNamingAlias;
                     AdvancedSettingsViewModel.IncludeT4File = serviceConfig.IncludeT4File;
-                    AdvancedSettingsViewModel.IncludeT4FileEnabled = false; // advancedSettings.IncludeT4File.IsEnabled = false;
+                    AdvancedSettingsViewModel.IncludeT4FileEnabled = false;//advancedSettings.IncludeT4File.IsEnabled = false;
                 }
 
-                // Restore the advanced settings to UI elements.
+                //Restore the advanced settings to UI elements.
                 AdvancedSettingsViewModel.PageEntering += (sender, args) =>
                 {
                     if (sender is AdvancedSettingsViewModel advancedSettingsViewModel)
@@ -88,8 +88,6 @@ namespace Unchase.OData.ConnectedService
                             advancedSettingsViewModel.UseNamespacePrefix = serviceConfig.UseNameSpacePrefix;
                             advancedSettingsViewModel.NamespacePrefix = serviceConfig.NamespacePrefix;
                             advancedSettingsViewModel.UseDataServiceCollection = serviceConfig.UseDataServiceCollection;
-                            advancedSettingsViewModel.FunctionImportsGenerator = serviceConfig.FunctionImportsGenerator;
-                            advancedSettingsViewModel.GenerateFunctionImports = serviceConfig.GenerateFunctionImports;
 
                             if (serviceConfig.EdmxVersion == Common.Constants.EdmxVersion4)
                             {
@@ -108,7 +106,7 @@ namespace Unchase.OData.ConnectedService
             {
                 if (sender is AdvancedSettingsViewModel advancedSettingsViewModel)
                 {
-                    advancedSettingsViewModel.IncludeExtensionsT4File = ConfigODataEndpointViewModel.EdmxVersion != Common.Constants.EdmxVersion4;
+                    advancedSettingsViewModel.IncludeExtensionsT4File = AdvancedSettingsViewModel.IncludeExtensionsT4File;// before like this ConfigODataEndpointViewModel.EdmxVersion != Common.Constants.EdmxVersion4;
                     advancedSettingsViewModel.IncludeExtensionsT4FileVisibility = ConfigODataEndpointViewModel.EdmxVersion != Common.Constants.EdmxVersion4 ? Visibility.Visible : Visibility.Collapsed;
                     advancedSettingsViewModel.FunctionImportsGenerator = AdvancedSettingsViewModel.FunctionImportsGenerator;
                     advancedSettingsViewModel.GenerateFunctionImports = AdvancedSettingsViewModel.GenerateFunctionImports;
@@ -119,9 +117,9 @@ namespace Unchase.OData.ConnectedService
             this.Pages.Add(AdvancedSettingsViewModel);
             this.IsFinishEnabled = true;
         }
-        #endregion
 
-        #region Methods
+
+
         public override Task<ConnectedServiceInstance> GetFinishedServiceInstanceAsync()
         {
             this.UserSettings.Save();
@@ -155,6 +153,11 @@ namespace Unchase.OData.ConnectedService
             this.ServiceInstance.ServiceConfig.WebProxyUri =
                 ConfigODataEndpointViewModel.WebProxyUri;
             #endregion
+
+            // missing 
+            this.ServiceInstance.ServiceConfig.NamespacePrefix = AdvancedSettingsViewModel.NamespacePrefix;
+            this.ServiceInstance.ServiceConfig.UseNameSpacePrefix = AdvancedSettingsViewModel.UseNamespacePrefix;
+            
 
             return Task.FromResult<ConnectedServiceInstance>(this.ServiceInstance);
         }
@@ -236,6 +239,5 @@ namespace Unchase.OData.ConnectedService
                 base.Dispose(disposing);
             }
         }
-        #endregion
     }
 }
